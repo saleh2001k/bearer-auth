@@ -1,10 +1,16 @@
 'use strict';
 
-const { users } = require('../models/index.js');
+const { User } = require('../models/index.js');
 
 async function handleSignup(req, res, next) {
   try {
-    let userRecord = await users.create(req.body);
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      throw new Error('Username and password are required.');
+    }
+
+    let userRecord = await User.create(req.body);
     const output = {
       user: userRecord,
       token: userRecord.token
@@ -18,9 +24,13 @@ async function handleSignup(req, res, next) {
 
 async function handleSignin(req, res, next) {
   try {
+    if (!req.user) {
+      return next(e);
+    }
+
     const user = {
-      user: request.user,
-      token: request.user.token
+      user: req.user,
+      token: req.user.token
     };
     res.status(200).json(user);
   } catch (e) {
@@ -31,7 +41,7 @@ async function handleSignin(req, res, next) {
 
 async function handleGetUsers(req, res, next) {
   try {
-    const userRecords = await users.findAll({});
+    const userRecords = await User.findAll({});
     const list = userRecords.map(user => user.username);
     res.status(200).json(list);
   } catch (e) {
@@ -41,7 +51,7 @@ async function handleGetUsers(req, res, next) {
 }
 
 function handleSecret(req, res, next) {
-  res.status(200).text("Welcome to the secret area!");
+  res.status(200).send("Welcome to the secret area!");
 }
 
 module.exports = {
@@ -49,4 +59,4 @@ module.exports = {
   handleSignin,
   handleGetUsers,
   handleSecret
-}
+};
