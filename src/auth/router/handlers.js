@@ -4,16 +4,17 @@ const { users } = require('../models/index.js');
 
 async function handleSignup(req, res, next) {
   try {
-    const { username, password } = req.body;
+    const { username: reqUsername, password } = req.body;
 
-    if (!username || !password) {
+    if (!reqUsername || !password) {
       throw new Error('Username and password are required.');
     }
 
     let userRecord = await users.create(req.body);
+    const { token, id, username } = userRecord;
     const output = {
-      user: userRecord,
-      token: userRecord.token
+      user: { token, id, username },
+      token
     };
     res.status(201).json(output);
   } catch (error) {
@@ -22,15 +23,17 @@ async function handleSignup(req, res, next) {
   }
 }
 
+
 async function handleSignin(req, res, next) {
   try {
     if (!req.user) {
       throw new Error('Invalid user.');
     }
 
+    const { token, id, username } = req.user;
     const user = {
-      user: req.user,
-      token: req.user.token
+      user: { token, id, username },
+      token
     };
     res.status(200).json(user);
   } catch (error) {
